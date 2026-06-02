@@ -114,17 +114,18 @@ class Program {
 
         stands.Add(new OutdoorStand("Outdoor-1", 450000));
         stands.Add(new OutdoorStand("Outdoor-2", 500000));
-        stands.Add(new OutdoorStand("Indoor-1", 600000));
-        stands.Add(new OutdoorStand("Indoor-2", 700000));
-        stands.Add(new OutdoorStand("Premium-1", 1800000));
-        stands.Add(new OutdoorStand("Premium-2", 2000000));
+        stands.Add(new IndoorStand("Indoor-1", 600000));
+        stands.Add(new IndoorStand("Indoor-2", 700000));
+        stands.Add(new PremiumStand("Premium-1", 1800000));
+        stands.Add(new PremiumStand("Premium-2", 2000000));
 
         bool running = true;
         while (running)
         {
             Console.WriteLine(
-                centeredAlign("=== Starlight Festival ===", width) + "\n\n" +
-                centeredAlign("Available Stands", width) + "\n" +
+                new string('=', width - 1) + "\n" +
+                centeredAlign("<<< Starlight Festival >>>", width) + "\n\n" +
+                centeredAlign("< Available Stands >", width) + "\n" +
                 new string('=', width - 1) + "\n" +
 
                 // Table Header
@@ -145,6 +146,8 @@ class Program {
                         $"{centeredAlign("Available", columnSize)}|");
                 }
             }
+            Console.WriteLine(new string('=', width - 1));
+
             Console.Write(
                 "\n1. Rent a Stand" +
                 "\n2. End Renting a Stand" +
@@ -214,29 +217,45 @@ class Program {
 
     static void EndRentingStand(List<Stand> stands)
     {
+        List<Stand> unavailables = new List<Stand>();
+
+        for (int i = 0; stands.Count > i; i++)
+        {
+            if (!(stands[i].IsAvailable))
+            {
+                unavailables.Add(stands[i]);
+            } 
+        }
+
+        if ((unavailables.Count == 0))
+        {
+            Console.WriteLine("\nNo stands are currently rented.");
+            Console.WriteLine("Press any key to continue...");
+            Console.ReadKey();
+            Console.WriteLine("\n\n");
+            return;
+        }
+            
         Console.WriteLine(
             "\n\n" +
             centeredAlign("Available Stands", width) + "\n" +
-            new string('=', width) + "\n" +
+            new string('=', width - 1) + "\n" +
 
             // Table Header
             $"{centeredAlign("Stand Name", columnSize)}|" +
             $"{centeredAlign("Price/Day", columnSize)}|" +
             $"{centeredAlign("Status", columnSize)}|" + "\n" +
 
-            new string('=', width)
+            new string('=', width - 1)
             );
 
-        for (int i = 0; stands.Count > i; i++)
+        for (int i = 0; unavailables.Count > i; i++)
         {
-            if (!(stands[i].IsAvailable))
-            {
-                string ParsedPrice = currencyFormat(stands[i].DailyRentalPrice);
-                Console.WriteLine(
-                    $"{centeredAlign(stands[i].StandName, columnSize)}|" +
-                    $"{centeredAlign(ParsedPrice, columnSize)}|" +
-                    $"{centeredAlign("Available", columnSize)}|");
-            }
+        string ParsedPrice = currencyFormat(unavailables[i].DailyRentalPrice);
+            Console.WriteLine(
+            $"{centeredAlign(unavailables[i].StandName, columnSize)}|" +
+            $"{centeredAlign(ParsedPrice, columnSize)}|" +
+            $"{centeredAlign("Rented", columnSize)}|");
         }
 
         Console.Write("\n\nEnter the name of the stand you want to terminate: ");
