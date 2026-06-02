@@ -33,7 +33,7 @@
         get { return isAvailable; }
     }
 
-    void DisplayInfo()
+    void DisplayInfo() // Method to display stand information
     {
         Console.WriteLine(string.Format(
             $"Stand Name    : {standName} \n" +
@@ -105,6 +105,9 @@ class PremiumStand : Stand {
 }
 
 class Program {
+
+    const int width = 49;
+    const int columnSize = 15;
     static void Main(string[] args)
     {
         List<Stand> stands = new List<Stand>();
@@ -116,23 +119,30 @@ class Program {
         stands.Add(new OutdoorStand("Premium-1", 1800000));
         stands.Add(new OutdoorStand("Premium-2", 2000000));
 
-        const int width = 40;
-        const int columnSize = 12;
-
         bool running = true;
         while (running)
         {
             Console.WriteLine(
-                centeredAlign("=== Starlight Festival ===", width) +
-                centeredAlign("Available Stands", width) +
-                new string('=', width) +
-                $"{centeredAlign("Stand Name", columnSize)}| {centeredAlign("Price/Day", columnSize)}| {centeredAlign("Status", columnSize)}"
+                centeredAlign("=== Starlight Festival ===", width) + "\n\n" +
+                centeredAlign("Available Stands", width) + "\n" +
+                new string('=', width - 1) + "\n" +
+
+                // Table Header
+                $"{centeredAlign("Stand Name", columnSize)}|" +
+                $"{centeredAlign("Price/Day", columnSize)}|" +
+                $"{centeredAlign("Status", columnSize)}|" + "\n" +
+                
+                new string('=', width - 1)
                 );
             for (int i = 0; stands.Count > i; i++)
             {
                 if (stands[i].IsAvailable)
                 {
-                    Console.WriteLine($"{stands[i].StandName,columnSize}| {stands[i].DailyRentalPrice,columnSize}| Available");
+                    string ParsedPrice = currencyFormat(stands[i].DailyRentalPrice);
+                    Console.WriteLine(
+                        $"{centeredAlign(stands[i].StandName,columnSize)}|" +
+                        $"{centeredAlign(ParsedPrice,columnSize)}|" +
+                        $"{centeredAlign("Available", columnSize)}|");
                 }
             }
             Console.Write(
@@ -140,8 +150,13 @@ class Program {
                 "\n2. End Renting a Stand" +
                 "\n3. Exit" +
                 "\n\nSelect a Menu: ");
-            string choice = Console.ReadLine();
+            string? choice = Console.ReadLine();
 
+            while (choice != "1" && choice != "2" && choice != "3")
+            {
+                Console.Write("Invalid choice. Please select a valid menu option: ");
+                choice = Console.ReadLine();
+            }
             switch (choice)
             {
                 case "1":
@@ -155,7 +170,7 @@ class Program {
                     running = false;
                     break;
                 default:
-                    Console.WriteLine("Invalid choice. Please select a valid menu option.\n\n");
+                    Console.WriteLine("Invalid choice.\n\n");
                     break;
             }
         }
@@ -163,22 +178,23 @@ class Program {
 
     static void RentStand(List<Stand> stands)
     {
-        Console.Write("Enter the name of the stand you want to rent: ");
-        string standName = Console.ReadLine();
-        Stand ? selectedStand = stands.FirstOrDefault(s => s.StandName.ToLower() == standName.ToLower());
+        Console.Write("\nEnter the name of the stand you want to rent: ");
+        string? standName = Console.ReadLine();
+        Stand? selectedStand = stands.FirstOrDefault(s => s.StandName.ToLower() == standName?.ToLower());
         if (selectedStand != null)
         {
             if (selectedStand.IsAvailable)
             {
-                Console.WriteLine($"Stand found: {selectedStand.StandName} | Rp.{selectedStand.DailyRentalPrice} / Day");
+                Console.WriteLine($"Stand found: {selectedStand.StandName} | {currencyFormat(selectedStand.DailyRentalPrice)} / Day");
                 Console.Write("Enter the number of rental days: ");
                 int rentalDays;
                 while (!int.TryParse(Console.ReadLine(), out rentalDays) || rentalDays <= 0)
                 {
                     Console.Write("Please enter a valid number of days: ");
                 }
-                double totalCost = selectedStand.CalculateTotal(rentalDays);
-                Console.WriteLine($"{selectedStand.StandName} has been succesfully rented for {rentalDays}\nTotal: Rp.{totalCost}"); 
+                double tCost = selectedStand.CalculateTotal(rentalDays);
+                string totalCost = currencyFormat(tCost);
+                Console.WriteLine($"{selectedStand.StandName} has been succesfully rented for {rentalDays}\nTotal: {totalCost}"); 
                 selectedStand.ChangeStatus(); // Mark as rented
             }
             else
@@ -193,18 +209,44 @@ class Program {
 
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
+        Console.WriteLine("\n\n");
     }
 
     static void EndRentingStand(List<Stand> stands)
     {
-        Console.Write("Enter the name of the stand you want to rent: ");
-        string standName = Console.ReadLine();
-        Stand? selectedStand = stands.FirstOrDefault(s => s.StandName.ToLower() == standName.ToLower());
+        Console.WriteLine(
+            "\n\n" +
+            centeredAlign("Available Stands", width) + "\n" +
+            new string('=', width) + "\n" +
+
+            // Table Header
+            $"{centeredAlign("Stand Name", columnSize)}|" +
+            $"{centeredAlign("Price/Day", columnSize)}|" +
+            $"{centeredAlign("Status", columnSize)}|" + "\n" +
+
+            new string('=', width)
+            );
+
+        for (int i = 0; stands.Count > i; i++)
+        {
+            if (!(stands[i].IsAvailable))
+            {
+                string ParsedPrice = currencyFormat(stands[i].DailyRentalPrice);
+                Console.WriteLine(
+                    $"{centeredAlign(stands[i].StandName, columnSize)}|" +
+                    $"{centeredAlign(ParsedPrice, columnSize)}|" +
+                    $"{centeredAlign("Available", columnSize)}|");
+            }
+        }
+
+        Console.Write("\n\nEnter the name of the stand you want to terminate: ");
+        string? standName = Console.ReadLine();
+        Stand? selectedStand = stands.FirstOrDefault(s => s.StandName.ToLower() == standName?.ToLower());
         if (selectedStand != null)
         {
             if (!(selectedStand.IsAvailable))
             {
-                Console.WriteLine($"Stand found: {selectedStand.StandName} | Rp.{selectedStand.DailyRentalPrice} / Day");
+                Console.WriteLine($"Stand found: {selectedStand.StandName} | {currencyFormat(selectedStand.DailyRentalPrice)} / Day");
                 Console.WriteLine($"Rent session for {selectedStand.StandName} has been succesfully terminated.");
                 selectedStand.ChangeStatus(); // Mark as available
             }
@@ -220,12 +262,18 @@ class Program {
 
         Console.WriteLine("Press any key to continue...");
         Console.ReadKey();
+        Console.WriteLine("\n\n");
     }
 
     // Centers the text within a specified width by adding spaces on both sides
     static string centeredAlign(string text, int width)
     {
         int spaces = (width - text.Length) / 2;
-        return new string(' ', spaces) + text + new string(' ', spaces);
+        return new string(' ', spaces) + text + new string(' ', spaces + ((text.Length + width) % 2));
+    }
+
+    static string currencyFormat(double amount)
+    {
+        return string.Format("Rp.{0:N0}", amount);
     }
 }
