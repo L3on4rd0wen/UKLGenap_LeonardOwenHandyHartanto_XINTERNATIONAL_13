@@ -87,7 +87,7 @@ class IndoorStand : Stand
     }
 }
 class PremiumStand : Stand {
-    protected double _securityFee = 100000;
+    protected double _securityFee = 300000;
     public PremiumStand(string name, double price) : base(name, price)
     {
         StandName = name;
