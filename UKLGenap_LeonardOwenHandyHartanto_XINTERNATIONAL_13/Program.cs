@@ -82,7 +82,7 @@ class IndoorStand : Stand
     }
     public override double CalculateTotal(int rentalDays)
     {
-        double total = (DailyRentalPrice * rentalDays) + (ElectricityFee * rentalDays);
+        double total = base.CalculateTotal(rentalDays) + (ElectricityFee * rentalDays);
         return total;
     }
 }
@@ -101,6 +101,13 @@ class PremiumStand : Stand {
     {
         double total = (DailyRentalPrice * rentalDays) + SecurityFee;
         return total;
+    }
+}
+
+class StandVIP : PremiumStand {
+    public StandVIP(string name, double price) : base(name, price)
+    {
+        
     }
 }
 
@@ -238,7 +245,7 @@ class Program {
             
         Console.WriteLine(
             "\n\n" +
-            centeredAlign("Available Stands", width) + "\n" +
+            centeredAlign("Rented Stands", width) + "\n" +
             new string('=', width - 1) + "\n" +
 
             // Table Header
